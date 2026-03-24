@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth spring-like animation for checkmark toggle */
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.chip-pop {
+  animation: pop 0.25s ease-out;
+}
+
+/* date input styling */
+input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+  cursor: pointer;
+}
