@@ -6,12 +6,22 @@ import { useHabits } from '@/hooks/useHabits';
 import { SummaryBanner } from './SummaryBanner';
 import { HabitCard } from './HabitCard';
 import { AddHabitSheet } from './AddHabitSheet';
+import { SyncPanel } from './SyncPanel';
 import { isOnTrack, hasScheduledHabitToday } from '@/lib/habitUtils';
 import { getTodayStr, getWeekLabel } from '@/lib/dateUtils';
 
 export function HabitTrackerApp() {
-  const { activeHabits, archivedHabits, hydrated, addHabit, deleteHabit, toggleCheckIn } =
-    useHabits();
+  const {
+    activeHabits,
+    archivedHabits,
+    hydrated,
+    syncCode,
+    syncing,
+    addHabit,
+    deleteHabit,
+    toggleCheckIn,
+    changeSyncCode,
+  } = useHabits();
   const [weekOffset, setWeekOffset] = useState(0);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -91,6 +101,13 @@ export function HabitTrackerApp() {
             ))}
           </div>
         )}
+
+        {/* Sync panel */}
+        <SyncPanel
+          syncCode={syncCode}
+          syncing={syncing}
+          onChangeSyncCode={changeSyncCode}
+        />
 
         {/* Archived section */}
         {archivedHabits.length > 0 && (
