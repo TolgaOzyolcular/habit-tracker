@@ -205,3 +205,4 @@ For issues or questions:
 - Verify environment variables are set correctly
 - Ensure the backend server is running on port 3000
 - Check browser network tab for API call failures # carbon.protocol
+# habit-tracker
