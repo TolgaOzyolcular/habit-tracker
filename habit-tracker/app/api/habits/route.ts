@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { type HabitsStore } from '@/lib/types';
 
-const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const REDIS_URL = process.env.KV_REST_API_URL;
+const REDIS_TOKEN = process.env.KV_REST_API_TOKEN;
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
