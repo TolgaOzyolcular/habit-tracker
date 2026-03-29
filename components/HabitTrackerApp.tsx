@@ -20,6 +20,7 @@ export function HabitTrackerApp() {
     addHabit,
     deleteHabit,
     toggleCheckIn,
+    updateHabit,
     changeSyncCode,
   } = useHabits();
   const [weekOffset, setWeekOffset] = useState(0);
@@ -97,6 +98,7 @@ export function HabitTrackerApp() {
                 today={today}
                 onToggle={toggleCheckIn}
                 onDelete={deleteHabit}
+                onUpdate={updateHabit}
               />
             ))}
           </div>
@@ -133,6 +135,7 @@ export function HabitTrackerApp() {
                     today={today}
                     onToggle={toggleCheckIn}
                     onDelete={deleteHabit}
+                    onUpdate={updateHabit}
                     isArchived
                   />
                 ))}

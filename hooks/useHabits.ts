@@ -157,6 +157,13 @@ export function useHabits() {
     [habits, persist]
   );
 
+  const updateHabit = useCallback(
+    (id: string, changes: { name?: string; frequency?: DayName[] }) => {
+      persist(habits.map((h) => (h.id === id ? { ...h, ...changes } : h)));
+    },
+    [habits, persist]
+  );
+
   return {
     activeHabits: habits.filter((h) => !isHabitArchived(h, today)),
     archivedHabits: habits.filter((h) => isHabitArchived(h, today)),
@@ -166,6 +173,7 @@ export function useHabits() {
     addHabit,
     deleteHabit,
     toggleCheckIn,
+    updateHabit,
     changeSyncCode,
   };
 }

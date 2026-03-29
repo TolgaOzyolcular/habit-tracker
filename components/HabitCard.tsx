@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Check } from 'lucide-react';
-import { type Habit } from '@/lib/types';
+import { Trash2, Check, Pencil } from 'lucide-react';
+import { type Habit, type DayName } from '@/lib/types';
 import { DAY_NAMES } from '@/lib/types';
 import {
   isOnTrack,
@@ -13,6 +13,7 @@ import {
 } from '@/lib/habitUtils';
 import { getWeekDays } from '@/lib/dateUtils';
 import { DeleteDialog } from './DeleteDialog';
+import { EditHabitSheet } from './EditHabitSheet';
 
 interface HabitCardProps {
   habit: Habit;
@@ -20,6 +21,7 @@ interface HabitCardProps {
   today: string;
   onToggle: (habitId: string, dateStr: string) => void;
   onDelete: (habitId: string) => void;
+  onUpdate: (habitId: string, changes: { name: string; frequency: DayName[] }) => void;
   isArchived?: boolean;
 }
 
@@ -44,9 +46,11 @@ export function HabitCard({
   today,
   onToggle,
   onDelete,
+  onUpdate,
   isArchived = false,
 }: HabitCardProps) {
   const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const weekDays = getWeekDays(weekOffset);
   const onTrack = !isArchived && isOnTrack(habit, today);
 
@@ -84,6 +88,15 @@ export function HabitCard({
               >
                 {onTrack ? 'On Track' : 'Off Track'}
               </span>
+            )}
+            {!isArchived && (
+              <button
+                onClick={() => setShowEdit(true)}
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-300 hover:text-indigo-400 hover:bg-indigo-50 active:bg-indigo-100 transition-colors"
+                aria-label={`Edit ${habit.name}`}
+              >
+                <Pencil size={14} />
+              </button>
             )}
             <button
               onClick={() => setShowDelete(true)}
@@ -171,6 +184,14 @@ export function HabitCard({
             setShowDelete(false);
           }}
           onCancel={() => setShowDelete(false)}
+        />
+      )}
+
+      {showEdit && (
+        <EditHabitSheet
+          habit={habit}
+          onSave={(changes) => onUpdate(habit.id, changes)}
+          onClose={() => setShowEdit(false)}
         />
       )}
     </>
