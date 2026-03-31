@@ -30,7 +30,13 @@ export function canToggle(habit: Habit, dateStr: string, today: string): boolean
  * no check-in (grace: today is excluded from the check).
  */
 function isOnTrackDayBased(habit: Habit, today: string): boolean {
-  const current = new Date(habit.createdAt + 'T00:00:00');
+  // Only check from lastCheckedDate+1 onward — missed days before that have
+  // already been "paid for" by end-date extensions and don't count against on-track.
+  const scanStart = habit.lastCheckedDate
+    ? addDays(habit.lastCheckedDate, 1)
+    : habit.createdAt;
+
+  const current = new Date(scanStart + 'T00:00:00');
   const todayDate = new Date(today + 'T00:00:00');
   const expiryDate = new Date(habit.expiryDate + 'T00:00:00');
   const endDate = todayDate < expiryDate ? todayDate : expiryDate;
