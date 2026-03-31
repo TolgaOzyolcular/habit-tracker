@@ -50,3 +50,17 @@ export function getTomorrowStr(): string {
   d.setHours(0, 0, 0, 0);
   return formatDate(d);
 }
+
+/** Add n calendar days to a YYYY-MM-DD string (n may be negative) */
+export function addDays(dateStr: string, n: number): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return formatDate(d);
+}
+
+/** Returns the Sunday (YYYY-MM-DD) of the week that contains dateStr */
+export function getWeekSunday(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() - d.getDay());
+  return formatDate(d);
+}

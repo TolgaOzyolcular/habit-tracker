@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { type Habit, type DayName, type HabitsStore } from '@/lib/types';
-import { generateId, isHabitArchived } from '@/lib/habitUtils';
+import { generateId, isHabitArchived, applyHabitExtensions } from '@/lib/habitUtils';
 import { getTodayStr } from '@/lib/dateUtils';
 
 const STORAGE_KEY = 'habit-tracker';
@@ -66,6 +66,7 @@ async function apiSave(code: string, habits: Habit[]): Promise<void> {
 export interface AddHabitInput {
   name: string;
   frequency: DayName[];
+  timesPerWeek?: number;
   expiryDate: string;
 }
 
@@ -78,18 +79,21 @@ export function useHabits() {
   const today = getTodayStr();
 
   // On mount: get/create sync code → try API → fall back to localStorage
+  // After loading, apply any missed-day end-date extensions and persist if changed.
   useEffect(() => {
     const code = getOrCreateSyncCode();
     setSyncCode(code);
 
     void apiFetch(code).then((apiHabits) => {
-      if (apiHabits !== null && apiHabits.length > 0) {
-        setHabits(apiHabits);
-        saveLocal(apiHabits);
-      } else {
-        const local = loadLocal();
-        setHabits(local);
-        if (local.length > 0) void apiSave(code, local);
+      const base: Habit[] =
+        apiHabits !== null && apiHabits.length > 0 ? apiHabits : loadLocal();
+
+      const { habits: extended, changed } = applyHabitExtensions(base, getTodayStr());
+
+      setHabits(extended);
+      saveLocal(extended);
+      if (changed || (apiHabits === null && base.length > 0)) {
+        void apiSave(code, extended);
       }
       setHydrated(true);
     });
@@ -124,7 +128,8 @@ export function useHabits() {
       const newHabit: Habit = {
         id: generateId(),
         name: input.name,
-        frequency: input.frequency,
+        frequency: input.timesPerWeek ? [] : input.frequency,
+        timesPerWeek: input.timesPerWeek,
         createdAt: today,
         expiryDate: input.expiryDate,
         checkIns: [],
@@ -158,7 +163,16 @@ export function useHabits() {
   );
 
   const updateHabit = useCallback(
-    (id: string, changes: { name?: string; frequency?: DayName[]; createdAt?: string; expiryDate?: string }) => {
+    (
+      id: string,
+      changes: {
+        name?: string;
+        frequency?: DayName[];
+        timesPerWeek?: number;
+        createdAt?: string;
+        expiryDate?: string;
+      }
+    ) => {
       persist(habits.map((h) => (h.id === id ? { ...h, ...changes } : h)));
     },
     [habits, persist]

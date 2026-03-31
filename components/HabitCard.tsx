@@ -21,7 +21,7 @@ interface HabitCardProps {
   today: string;
   onToggle: (habitId: string, dateStr: string) => void;
   onDelete: (habitId: string) => void;
-  onUpdate: (habitId: string, changes: { name: string; frequency: DayName[]; createdAt: string; expiryDate: string }) => void;
+  onUpdate: (habitId: string, changes: { name: string; frequency: DayName[]; timesPerWeek?: number; createdAt: string; expiryDate: string }) => void;
   isArchived?: boolean;
 }
 
@@ -71,7 +71,7 @@ export function HabitCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0 pr-2">
             <h3 className="text-base font-semibold text-gray-900 truncate">{habit.name}</h3>
-            <p className="text-xs text-gray-400 mt-0.5">{getFrequencyLabel(habit.frequency)}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{getFrequencyLabel(habit)}</p>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {isArchived ? (
