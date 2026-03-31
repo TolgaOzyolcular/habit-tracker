@@ -158,7 +158,7 @@ export function useHabits() {
   );
 
   const updateHabit = useCallback(
-    (id: string, changes: { name?: string; frequency?: DayName[] }) => {
+    (id: string, changes: { name?: string; frequency?: DayName[]; createdAt?: string; expiryDate?: string }) => {
       persist(habits.map((h) => (h.id === id ? { ...h, ...changes } : h)));
     },
     [habits, persist]

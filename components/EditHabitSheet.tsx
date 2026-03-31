@@ -6,7 +6,7 @@ import { DAY_NAMES, type DayName, type Habit } from '@/lib/types';
 
 interface EditHabitSheetProps {
   habit: Habit;
-  onSave: (changes: { name: string; frequency: DayName[] }) => void;
+  onSave: (changes: { name: string; frequency: DayName[]; createdAt: string; expiryDate: string }) => void;
   onClose: () => void;
 }
 
@@ -20,6 +20,8 @@ export function EditHabitSheet({ habit, onSave, onClose }: EditHabitSheetProps) 
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState(habit.name);
   const [selectedDays, setSelectedDays] = useState<Set<DayName>>(new Set(habit.frequency));
+  const [startDate, setStartDate] = useState(habit.createdAt);
+  const [expiryDate, setExpiryDate] = useState(habit.expiryDate);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -55,7 +57,19 @@ export function EditHabitSheet({ habit, onSave, onClose }: EditHabitSheetProps) 
       setError('Please enter a habit name.');
       return;
     }
-    onSave({ name: trimmed, frequency: Array.from(selectedDays) });
+    if (!startDate) {
+      setError('Please set a start date.');
+      return;
+    }
+    if (!expiryDate) {
+      setError('Please set an end date.');
+      return;
+    }
+    if (expiryDate <= startDate) {
+      setError('End date must be after the start date.');
+      return;
+    }
+    onSave({ name: trimmed, frequency: Array.from(selectedDays), createdAt: startDate, expiryDate });
     handleClose();
   };
 
@@ -144,6 +158,34 @@ export function EditHabitSheet({ habit, onSave, onClose }: EditHabitSheetProps) 
                   {day[0]}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  setError('');
+                }}
+                className="w-full px-4 min-h-[48px] rounded-xl border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={expiryDate}
+                onChange={(e) => {
+                  setExpiryDate(e.target.value);
+                  setError('');
+                }}
+                className="w-full px-4 min-h-[48px] rounded-xl border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
             </div>
           </div>
 

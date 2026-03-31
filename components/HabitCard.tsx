@@ -21,7 +21,7 @@ interface HabitCardProps {
   today: string;
   onToggle: (habitId: string, dateStr: string) => void;
   onDelete: (habitId: string) => void;
-  onUpdate: (habitId: string, changes: { name: string; frequency: DayName[] }) => void;
+  onUpdate: (habitId: string, changes: { name: string; frequency: DayName[]; createdAt: string; expiryDate: string }) => void;
   isArchived?: boolean;
 }
 
