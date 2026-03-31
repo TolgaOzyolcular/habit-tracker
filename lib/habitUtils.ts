@@ -30,10 +30,22 @@ export function canToggle(habit: Habit, dateStr: string, today: string): boolean
  * no check-in (grace: today is excluded from the check).
  */
 function isOnTrackDayBased(habit: Habit, today: string): boolean {
-  // Only check from lastCheckedDate+1 onward — missed days before that have
-  // already been "paid for" by end-date extensions and don't count against on-track.
-  const scanStart = habit.lastCheckedDate
-    ? addDays(habit.lastCheckedDate, 1)
+  // Find the most recent check-in on a required day before today.
+  // Anything before that is already "recovered from" — we only care about
+  // whether there are any missed required days between that check-in and today.
+  const lastRequiredCheckIn = habit.checkIns
+    .filter(
+      (d) =>
+        d < today &&
+        d >= habit.createdAt &&
+        d <= habit.expiryDate &&
+        habit.frequency.includes(getDayName(d))
+    )
+    .sort()
+    .at(-1); // most recent
+
+  const scanStart = lastRequiredCheckIn
+    ? addDays(lastRequiredCheckIn, 1)
     : habit.createdAt;
 
   const current = new Date(scanStart + 'T00:00:00');
@@ -43,9 +55,12 @@ function isOnTrackDayBased(habit: Habit, today: string): boolean {
 
   while (current <= endDate) {
     const dateStr = formatDate(current);
-    const dayName = DAY_NAMES[current.getDay()];
-    if (habit.frequency.includes(dayName)) {
-      if (dateStr !== today && !habit.checkIns.includes(dateStr)) return false;
+    if (
+      habit.frequency.includes(DAY_NAMES[current.getDay()]) &&
+      dateStr !== today &&
+      !habit.checkIns.includes(dateStr)
+    ) {
+      return false;
     }
     current.setDate(current.getDate() + 1);
   }
