@@ -8,6 +8,18 @@ export function isHabitArchived(habit: Habit, today: string): boolean {
 export function isScheduledOnDay(habit: Habit, dateStr: string): boolean {
   // Times-per-week: every day within the active period is a valid check-in day
   if (typeof habit.timesPerWeek === 'number') return true;
+
+  // Cycle-based: N days on, M days off, anchored to createdAt
+  if (typeof habit.cycleOn === 'number' && typeof habit.cycleOff === 'number') {
+    const start = new Date(habit.createdAt + 'T00:00:00');
+    const date = new Date(dateStr + 'T00:00:00');
+    const daysSinceStart = Math.round(
+      (date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (daysSinceStart < 0) return false;
+    return (daysSinceStart % (habit.cycleOn + habit.cycleOff)) < habit.cycleOn;
+  }
+
   return habit.frequency.includes(getDayName(dateStr));
 }
 
@@ -39,7 +51,7 @@ function isOnTrackDayBased(habit: Habit, today: string): boolean {
         d < today &&
         d >= habit.createdAt &&
         d <= habit.expiryDate &&
-        habit.frequency.includes(getDayName(d))
+        isScheduledOnDay(habit, d)
     )
     .sort()
     .at(-1); // most recent
@@ -56,7 +68,7 @@ function isOnTrackDayBased(habit: Habit, today: string): boolean {
   while (current <= endDate) {
     const dateStr = formatDate(current);
     if (
-      habit.frequency.includes(DAY_NAMES[current.getDay()]) &&
+      isScheduledOnDay(habit, dateStr) &&
       dateStr !== today &&
       !habit.checkIns.includes(dateStr)
     ) {
@@ -148,7 +160,7 @@ function computeExtensionsDayBased(
     if (
       dateStr >= habit.createdAt &&
       dateStr <= habit.expiryDate &&
-      habit.frequency.includes(getDayName(dateStr)) &&
+      isScheduledOnDay(habit, dateStr) &&
       !habit.checkIns.includes(dateStr)
     ) {
       daysToExtend++;
@@ -224,6 +236,9 @@ export function applyHabitExtensions(
 export function getFrequencyLabel(habit: Habit): string {
   if (typeof habit.timesPerWeek === 'number') {
     return `${habit.timesPerWeek}× per week`;
+  }
+  if (typeof habit.cycleOn === 'number' && typeof habit.cycleOff === 'number') {
+    return `${habit.cycleOn} on / ${habit.cycleOff} off`;
   }
   const sorted = [...habit.frequency].sort(
     (a, b) => DAY_NAMES.indexOf(a) - DAY_NAMES.indexOf(b)

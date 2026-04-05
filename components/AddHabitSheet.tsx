@@ -11,7 +11,7 @@ interface AddHabitSheetProps {
   onClose: () => void;
 }
 
-type ScheduleMode = 'days' | 'times';
+type ScheduleMode = 'days' | 'times' | 'cycle';
 
 const DAY_PRESETS: { label: string; days: DayName[] }[] = [
   { label: 'Every day', days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] },
@@ -27,6 +27,8 @@ export function AddHabitSheet({ onAdd, onClose }: AddHabitSheetProps) {
     new Set<DayName>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
   );
   const [timesPerWeek, setTimesPerWeek] = useState(3);
+  const [cycleOn, setCycleOn] = useState(3);
+  const [cycleOff, setCycleOff] = useState(1);
   const [expiryDate, setExpiryDate] = useState('');
   const [error, setError] = useState('');
 
@@ -70,6 +72,13 @@ export function AddHabitSheet({ onAdd, onClose }: AddHabitSheetProps) {
     setError('');
   };
 
+  const selectCyclePreset = () => {
+    setScheduleMode('cycle');
+    setCycleOn(3);
+    setCycleOff(1);
+    setError('');
+  };
+
   const handleSubmit = () => {
     const trimmed = name.trim();
     if (!trimmed) { setError('Please enter a habit name.'); return; }
@@ -78,6 +87,8 @@ export function AddHabitSheet({ onAdd, onClose }: AddHabitSheetProps) {
 
     if (scheduleMode === 'times') {
       onAdd({ name: trimmed, frequency: [], timesPerWeek, expiryDate });
+    } else if (scheduleMode === 'cycle') {
+      onAdd({ name: trimmed, frequency: [], cycleOn, cycleOff, expiryDate });
     } else {
       onAdd({ name: trimmed, frequency: Array.from(selectedDays), expiryDate });
     }
@@ -158,6 +169,16 @@ export function AddHabitSheet({ onAdd, onClose }: AddHabitSheetProps) {
               >
                 X / week
               </button>
+              <button
+                onClick={selectCyclePreset}
+                className={`px-3 min-h-[44px] rounded-xl text-sm font-medium border transition-colors ${
+                  scheduleMode === 'cycle'
+                    ? 'bg-indigo-500 text-white border-indigo-500'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300'
+                }`}
+              >
+                On / Off
+              </button>
             </div>
 
             {/* Day grid (day mode only) */}
@@ -176,6 +197,24 @@ export function AddHabitSheet({ onAdd, onClose }: AddHabitSheetProps) {
                     {day[0]}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Cycle stepper */}
+            {scheduleMode === 'cycle' && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setCycleOn((v) => Math.max(1, v - 1))} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition-colors" aria-label="Decrease on"><Minus size={16} /></button>
+                  <span className="text-2xl font-bold text-gray-900 w-8 text-center tabular-nums">{cycleOn}</span>
+                  <button onClick={() => setCycleOn((v) => v + 1)} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition-colors" aria-label="Increase on"><Plus size={16} /></button>
+                  <span className="text-sm text-gray-500">days on</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setCycleOff((v) => Math.max(1, v - 1))} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition-colors" aria-label="Decrease off"><Minus size={16} /></button>
+                  <span className="text-2xl font-bold text-gray-900 w-8 text-center tabular-nums">{cycleOff}</span>
+                  <button onClick={() => setCycleOff((v) => v + 1)} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition-colors" aria-label="Increase off"><Plus size={16} /></button>
+                  <span className="text-sm text-gray-500">days off</span>
+                </div>
               </div>
             )}
 

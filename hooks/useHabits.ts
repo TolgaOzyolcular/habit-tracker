@@ -67,6 +67,8 @@ export interface AddHabitInput {
   name: string;
   frequency: DayName[];
   timesPerWeek?: number;
+  cycleOn?: number;
+  cycleOff?: number;
   expiryDate: string;
 }
 
@@ -128,8 +130,10 @@ export function useHabits() {
       const newHabit: Habit = {
         id: generateId(),
         name: input.name,
-        frequency: input.timesPerWeek ? [] : input.frequency,
+        frequency: input.timesPerWeek || input.cycleOn ? [] : input.frequency,
         timesPerWeek: input.timesPerWeek,
+        cycleOn: input.cycleOn,
+        cycleOff: input.cycleOff,
         createdAt: today,
         expiryDate: input.expiryDate,
         checkIns: [],
@@ -169,7 +173,8 @@ export function useHabits() {
         name?: string;
         frequency?: DayName[];
         timesPerWeek?: number;
-        createdAt?: string;
+        cycleOn?: number;
+        cycleOff?: number;
         expiryDate?: string;
       }
     ) => {
